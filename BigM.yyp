@@ -1,5 +1,6 @@
 {
   "resources": [
+    {"id":{"name":"BigMCreateProblem","path":"scripts/BigMCreateProblem/BigMCreateProblem.yy",},"order":3,},
     {"id":{"name":"BigMSolve","path":"scripts/BigMSolve/BigMSolve.yy",},"order":2,},
     {"id":{"name":"oTest","path":"objects/oTest/oTest.yy",},"order":1,},
     {"id":{"name":"rMain","path":"rooms/rMain/rMain.yy",},"order":0,},
