@@ -1,15 +1,17 @@
 /// @param constraintEquationArray
 /// @param objectiveFunction
+/// @param [constantStruct]
+/// @param [constantStructByRef=false]
 
 #macro __BIG_M_VERY_LARGE  1000000
 #macro __BIG_M_VERY_SMALL  0.00001
 
-function BigMCreateProblem(_problemArray, _objectiveFunction)
+function BigMCreateProblem(_problemArray, _objectiveFunction, _constantStruct = undefined, _constantStructByRef = false)
 {
-    return new __BigMClassProblem(_problemArray, _objectiveFunction);
+    return new __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, _constantStructByRef = false);
 }
 
-function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
+function __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, _constantStructByRef) constructor
 {
     #region Initialize
     
@@ -21,6 +23,9 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
     //The number of equations is used to determine how high the tableau needs to be
     //Add an extra row at the bottom for the objective function
     __equationCount = array_length(_problemArray)+1;
+    __equationArray = array_create(__equationCount);
+    array_copy(__equationArray, 0, _problemArray, 0, __equationCount-1);
+    __equationArray[@ __equationCount-1] = _objectiveFunction;
     
     __basicVariablesXArray   = [];
     __basicVariablesYArray   = [];
@@ -34,17 +39,43 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
     
     __result = {};
     
+    //Build data structures to keep track of constants
+    __constantNameDict = {};
+    
+    if (_constantStructByRef)
+    {
+        __constantDict      = is_struct(_constantStruct)? _constantStruct : {};
+        __constantNameArray = is_struct(_constantStruct)? variable_struct_get_names(_constantStruct) : [];
+        
+        var _i = 0;
+        repeat(array_length(__constantNameArray))
+        {
+            __constantNameDict[$ __constantNameArray[_i]] = true;
+            ++_i;
+        }
+    }
+    else
+    {
+        __constantDict      = {};
+        __constantNameArray = is_struct(_constantStruct)? variable_struct_get_names(_constantStruct) : [];
+        
+        var _i = 0;
+        repeat(array_length(__constantNameArray))
+        {
+            var _name = __constantNameArray[_i];
+            __constantDict[$     _name] = _constantStruct[$ _name];
+            __constantNameDict[$ _name] = true;
+            ++_i;
+        }
+    }
+    
     //Figure out how wide our tableau needs to be based on the number of unique variables
     //We want to analyze constraints and the objective function so let's create an array that combines the two
-    var _equationArray = array_create(__equationCount);
-    array_copy(_equationArray, 0, _problemArray, 0, __equationCount-1);
-    _equationArray[@ __equationCount-1] = _objectiveFunction;
-    
     var _variableDict = {};
     var _i = 0;
     repeat(__equationCount)
     {
-        var _equationStruct = _equationArray[_i];
+        var _equationStruct = __equationArray[_i];
         var _equationTermsArray = variable_struct_get_names(_equationStruct);
         
         //Do it alphabetically, because why not
@@ -78,9 +109,13 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
                     break;
                 }
             }
-            else if (_term == "constant")
+            else if (_term == "const")
             {
-                //We can ignore these for now
+                //We can ignore these, they're handled later
+            }
+            else if (variable_struct_exists(__constantNameDict, _term))
+            {
+                //We can also ignore these too
             }
             else if (!variable_struct_exists(_variableDict, _term))
             {
@@ -109,7 +144,7 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
     var _i = 0;
     repeat(__equationCount)
     {
-        var _equationStruct = _equationArray[_i];
+        var _equationStruct = __equationArray[_i];
         
         //Unpack our variables into the tableau
         //TODO - Could we do this during the variable discovery phase?
@@ -122,10 +157,11 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
             ++_j;
         }
         
-        //Don't fiddle with the objective function
+        //Don't fiddle with the objective function...
         if (_i < __equationCount-1)
         {
-            __tableauGrid[# __tableauWidth-1, _i] = _equationStruct.constant;
+            //Set up our constant term. We'll adjust this later to include defined constants when executing .Solve()
+            __tableauGrid[# __tableauWidth-1, _i] = _equationStruct.const;
             
             var _op = _equationStruct.op;
             switch(_op)
@@ -276,6 +312,29 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
             ds_grid_resize(__workGrid, __tableauWidth, 1);
             ds_grid_clear(__workGrid, 0);
             
+            //Adjust our constant terms based on defined constants
+            var _i = 0;
+            repeat(__equationCount)
+            {
+                var _equationStruct = __equationArray[_i];
+                
+                var _delta = 0;
+                var _j = 0;
+                repeat(array_length(__constantNameArray))
+                {
+                    var _constantName = __constantNameArray[_j];
+                    var _coefficient = _equationStruct[$ _constantName];
+                    if (_coefficient != undefined) _delta += _coefficient*__constantDict[$ _constantName];
+                    ++_j;
+                }
+                
+                __outputTableau[# __tableauWidth-1, _i] -= _delta;
+                
+                ++_i;
+            }
+                
+            
+            //Build some temporary data structures for tracking basic variables
             var _nonbasicVariablesArray = array_create(array_length(__nonbasicVariablesArray));
             array_copy(_nonbasicVariablesArray, 0, __nonbasicVariablesArray, 0, array_length(__nonbasicVariablesArray));
     
@@ -379,6 +438,21 @@ function __BigMClassProblem(_problemArray, _objectiveFunction) constructor
     static GetVariableNames = function()
     {
         return __variableArray;
+    }
+    
+    static GetConstantCount = function()
+    {
+        return array_length(__constantNameArray);
+    }
+    
+    static GetConstantNames = function()
+    {
+        return __constantNameArray;
+    }
+    
+    static GetConstantStruct = function()
+    {
+        return __constantDict;
     }
     
     static GetFeasible = function()
