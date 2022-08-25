@@ -1,3 +1,3 @@
-# Big-M
+<h1 align="center">Big M/h1>
 
-Implementation of the [Big M Method](https://www.youtube.com/watch?v=upgpVkAkFkQ), a variant of Dantzig's [Simplex algorithm](https://optimization.cbe.cornell.edu/index.php?title=Simplex_algorithm), for GameMaker.
+<p align="center">Implementation of the <a href="https://www.youtube.com/watch?v=upgpVkAkFkQ">Big M Method</a>, a variant of Dantzig's <a href="https://optimization.cbe.cornell.edu/index.php?title=Simplex_algorithm">Simplex algorithm</a>, for GameMaker by <b>@jujuadams</b></p>
