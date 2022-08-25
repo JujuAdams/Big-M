@@ -18,7 +18,7 @@ function __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, 
     static __workGrid      = ds_grid_create(1, 1);
     static __outputTableau = ds_grid_create(1, 1);
     
-    __feasible = false;
+    __feasible = true;
     
     //The number of equations is used to determine how high the tableau needs to be
     //Add an extra row at the bottom for the objective function
@@ -269,24 +269,6 @@ function __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, 
         --_i;
     }
     
-    //Feasibility test
-    //After setting non-basic variables to zero, if the value of any basic variables are negative then the problem is infeasible
-    var _feasible = true;
-    var _i = 0;
-    repeat(array_length(__basicVariablesYArray))
-    {
-        var _y = __basicVariablesYArray[_i];
-        if (__tableauGrid[# __tableauWidth-1, _y] < 0)
-        {
-            _feasible = false;
-            break;
-        }
-        
-        ++_i;
-    }
-    
-    __feasible = _feasible;
-    
     #endregion
     
     
@@ -302,38 +284,54 @@ function __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, 
             ++_i;
         }
         
+        //Make a copy of the original tableau so we can operate freely and not worry about trashing cached data
+        ds_grid_resize(__outputTableau, __tableauWidth, __equationCount);
+        ds_grid_copy(__outputTableau, __tableauGrid);
+            
+        //We also need to resize the work grid since that gets reused between Big M struct instances
+        ds_grid_resize(__workGrid, __tableauWidth, 1);
+        ds_grid_clear(__workGrid, 0);
+            
+        //Adjust our constant terms based on defined constants
+        var _i = 0;
+        repeat(__equationCount-1)
+        {
+            var _equationStruct = __equationArray[_i];
+            
+            var _delta = 0;
+            var _j = 0;
+            repeat(array_length(__constantNameArray))
+            {
+                var _constantName = __constantNameArray[_j];
+                var _coefficient = _equationStruct[$ _constantName];
+                if (_coefficient != undefined) _delta += _coefficient*__constantDict[$ _constantName];
+                ++_j;
+            }
+            
+            __outputTableau[# __tableauWidth-1, _i] -= _delta;
+            
+            ++_i;
+        }
+        
+        //Feasibility test
+        //After setting non-basic variables to zero, if the value of any basic variables are negative then the problem is infeasible
+        var _feasible = true;
+        var _i = 0;
+        repeat(array_length(__basicVariablesYArray))
+        {
+            var _y = __basicVariablesYArray[_i];
+            if (__outputTableau[# __tableauWidth-1, _y] < 0)
+            {
+                _feasible = false;
+                break;
+            }
+            
+            ++_i;
+        }
+        
+        __feasible = _feasible;
         if (__feasible)
         {
-            //Make a copy of the original tableau so we can operate freely and not worry about trashing cached data
-            ds_grid_resize(__outputTableau, __tableauWidth, __equationCount);
-            ds_grid_copy(__outputTableau, __tableauGrid);
-            
-            //We also need to resize the work grid since that gets reused between Big M struct instances
-            ds_grid_resize(__workGrid, __tableauWidth, 1);
-            ds_grid_clear(__workGrid, 0);
-            
-            //Adjust our constant terms based on defined constants
-            var _i = 0;
-            repeat(__equationCount)
-            {
-                var _equationStruct = __equationArray[_i];
-                
-                var _delta = 0;
-                var _j = 0;
-                repeat(array_length(__constantNameArray))
-                {
-                    var _constantName = __constantNameArray[_j];
-                    var _coefficient = _equationStruct[$ _constantName];
-                    if (_coefficient != undefined) _delta += _coefficient*__constantDict[$ _constantName];
-                    ++_j;
-                }
-                
-                __outputTableau[# __tableauWidth-1, _i] -= _delta;
-                
-                ++_i;
-            }
-                
-            
             //Build some temporary data structures for tracking basic variables
             var _nonbasicVariablesArray = array_create(array_length(__nonbasicVariablesArray));
             array_copy(_nonbasicVariablesArray, 0, __nonbasicVariablesArray, 0, array_length(__nonbasicVariablesArray));
@@ -419,8 +417,6 @@ function __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, 
                 ++_i;
             }
         }
-        
-        return __result;
     }
     
     
@@ -453,11 +449,6 @@ function __BigMClassProblem(_problemArray, _objectiveFunction, _constantStruct, 
     static GetConstantStruct = function()
     {
         return __constantDict;
-    }
-    
-    static GetFeasible = function()
-    {
-        return __feasible;
     }
     
     static Destroy = function()
