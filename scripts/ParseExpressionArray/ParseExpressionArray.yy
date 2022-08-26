@@ -2,11 +2,11 @@
   "isDnD": false,
   "isCompatibility": false,
   "parent": {
-    "name": "Simplex",
-    "path": "folders/Simplex.yy",
+    "name": "BigM",
+    "path": "BigM.yyp",
   },
   "resourceVersion": "1.0",
-  "name": "SimplexSolver",
+  "name": "ParseExpressionArray",
   "tags": [],
   "resourceType": "GMScript",
 }

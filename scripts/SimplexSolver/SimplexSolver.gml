@@ -1,10 +1,10 @@
 /// @param constraintEquationArray
-/// @param objectiveFunction
+/// @param [objectiveFunction]
 
 #macro __BIG_M_VERY_LARGE  1000
 #macro __BIG_M_VERY_SMALL  0.00001
 
-function SimplexSolver(_problemArray, _objectiveFunction)
+function SimplexSolver(_problemArray, _objectiveFunction = {})
 {
     //The number of equations is used to determine how high the tableau needs to be
     //Add an extra row at the bottom for the objective function
@@ -112,7 +112,7 @@ function SimplexSolver(_problemArray, _objectiveFunction)
         if (_i < _equationCount-1)
         {
             var _op       = _equationStruct.op;
-            var _constant = _equationStruct.const;
+            var _constant = _equationStruct[$ "const"] ?? 0;
             
             //If our constant term is negative, flip signs across this row
             var _reverse = 1;

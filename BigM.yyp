@@ -1,7 +1,11 @@
 {
   "resources": [
+    {"id":{"name":"ParseExpressionArray","path":"scripts/ParseExpressionArray/ParseExpressionArray.yy",},"order":7,},
     {"id":{"name":"oTest","path":"objects/oTest/oTest.yy",},"order":1,},
-    {"id":{"name":"SimplexSolver","path":"scripts/SimplexSolver/SimplexSolver.yy",},"order":4,},
+    {"id":{"name":"snap_to_json","path":"scripts/snap_to_json/snap_to_json.yy",},"order":4,},
+    {"id":{"name":"ParseExpression","path":"scripts/ParseExpression/ParseExpression.yy",},"order":6,},
+    {"id":{"name":"MakeConstraint","path":"scripts/MakeConstraint/MakeConstraint.yy",},"order":5,},
+    {"id":{"name":"SimplexSolver","path":"scripts/SimplexSolver/SimplexSolver.yy",},"order":0,},
     {"id":{"name":"rMain","path":"rooms/rMain/rMain.yy",},"order":0,},
   ],
   "Options": [
@@ -25,7 +29,9 @@
   "RoomOrderNodes": [
     {"roomId":{"name":"rMain","path":"rooms/rMain/rMain.yy",},},
   ],
-  "Folders": [],
+  "Folders": [
+    {"folderPath":"folders/Simplex.yy","order":2,"resourceVersion":"1.0","name":"Simplex","tags":[],"resourceType":"GMFolder",},
+  ],
   "AudioGroups": [
     {"targets":-1,"resourceVersion":"1.3","name":"audiogroup_default","resourceType":"GMAudioGroup",},
   ],

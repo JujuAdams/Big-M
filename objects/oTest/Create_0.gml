@@ -1,17 +1,16 @@
-solution = SimplexSolver(
-    //Constraints
-    [
-        { Al:  1,                                 op: "==", const:   0 },
-        { Al: -1,   Ar:  1,                       op: "==", const: 720 },
-        { Al:  0.5, Ar:  0.5, Bl: -0.5, Br: -0.5, op: "==", const:   0 },
-        { Al:  1,   Ar: -1,   Bl: -1,   Br:  1,   op: "<=", const: -40 },
-    ],
-    
-    //Objective function (maximize)
-    {
-        Al: -1, Ar:  1,
-        Bl: -1, Br:  1,
-    }
-);
-
-show_debug_message(solution);
+//constraints = [
+//    MakeConstraint("A.left",   "=",               20),
+//    MakeConstraint("A.top",    "=",               20),
+//    MakeConstraint("A.right",  "=", room_width  - 20),
+//    MakeConstraint("A.bottom", "=", room_height - 20),
+//    
+//    MakeConstraint("B.x",      "=", "A.x"),
+//    MakeConstraint("B.width",  "<", "A.width", -50),
+//    MakeConstraint("B.top",    "=", "A.top", 100),
+//    MakeConstraint("B.height", ">", 100),
+//    MakeConstraint("B.bottom", "<", "A.bottom", -50),
+//];
+//
+//solution = SimplexSolver(constraints, { "B.bottom": -1 });
+//
+//show_debug_message(snap_to_json(solution, true, true));
