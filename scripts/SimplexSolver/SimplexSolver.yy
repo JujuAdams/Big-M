@@ -6,7 +6,7 @@
     "path": "BigM.yyp",
   },
   "resourceVersion": "1.0",
-  "name": "BigMCreateProblem",
+  "name": "SimplexSolver",
   "tags": [],
   "resourceType": "GMScript",
 }

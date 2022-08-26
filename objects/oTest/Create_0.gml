@@ -1,17 +1,17 @@
-problem = BigMCreateProblem(
+solution = SimplexSolver(
     //Constraints
     [
-        { x1: 1, x2: 1, x3: 0, op: "<=", const: 20 },
-        { x1: 1, x2: 0, x3: 1, op: "==", const:  5 },
-        { x1: 0, x2: 1, x3: 1, op: ">=", const: 10 },
+        { Al:  1,                                 op: "==", const:   0 },
+        { Al: -1,   Ar:  1,                       op: "==", const: 720 },
+        { Al:  0.5, Ar:  0.5, Bl: -0.5, Br: -0.5, op: "==", const:   0 },
+        { Al:  1,   Ar: -1,   Bl: -1,   Br:  1,   op: "<=", const: -40 },
     ],
     
     //Objective function (maximize)
-    { x1: 1, x2: -1, x3: 3 },
-    
-    //Constants (always LHS)
     {
+        Al: -1, Ar:  1,
+        Bl: -1, Br:  1,
     }
 );
 
-show_debug_message(problem.Solve());
+show_debug_message(solution);

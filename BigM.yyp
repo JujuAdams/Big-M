@@ -1,7 +1,7 @@
 {
   "resources": [
-    {"id":{"name":"BigMCreateProblem","path":"scripts/BigMCreateProblem/BigMCreateProblem.yy",},"order":3,},
     {"id":{"name":"oTest","path":"objects/oTest/oTest.yy",},"order":1,},
+    {"id":{"name":"SimplexSolver","path":"scripts/SimplexSolver/SimplexSolver.yy",},"order":4,},
     {"id":{"name":"rMain","path":"rooms/rMain/rMain.yy",},"order":0,},
   ],
   "Options": [
