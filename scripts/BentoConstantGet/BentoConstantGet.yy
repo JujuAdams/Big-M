@@ -2,11 +2,11 @@
   "isDnD": false,
   "isCompatibility": false,
   "parent": {
-    "name": "BigM",
-    "path": "BigM.yyp",
+    "name": "Bento",
+    "path": "folders/Bento.yy",
   },
   "resourceVersion": "1.0",
-  "name": "ParseExpressionArray",
+  "name": "BentoConstantGet",
   "tags": [],
   "resourceType": "GMScript",
 }

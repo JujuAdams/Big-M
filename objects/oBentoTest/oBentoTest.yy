@@ -27,7 +27,7 @@
     "path": "BigM.yyp",
   },
   "resourceVersion": "1.0",
-  "name": "oTest",
+  "name": "oBentoTest",
   "tags": [],
   "resourceType": "GMObject",
 }

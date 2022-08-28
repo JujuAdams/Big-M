@@ -65,7 +65,7 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
                     break;
                 }
             }
-            else if (_term == "const")
+            else if ((_term == "const") || (_term == "weight"))
             {
                 //We can ignore these, they're handled later
             }
