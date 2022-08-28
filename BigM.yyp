@@ -5,6 +5,7 @@
     {"id":{"name":"snap_to_json","path":"scripts/snap_to_json/snap_to_json.yy",},"order":4,},
     {"id":{"name":"ParseExpression","path":"scripts/ParseExpression/ParseExpression.yy",},"order":6,},
     {"id":{"name":"MakeConstraint","path":"scripts/MakeConstraint/MakeConstraint.yy",},"order":5,},
+    {"id":{"name":"SimplexSolverWeighted","path":"scripts/SimplexSolverWeighted/SimplexSolverWeighted.yy",},"order":1,},
     {"id":{"name":"SimplexSolver","path":"scripts/SimplexSolver/SimplexSolver.yy",},"order":0,},
     {"id":{"name":"rMain","path":"rooms/rMain/rMain.yy",},"order":0,},
   ],

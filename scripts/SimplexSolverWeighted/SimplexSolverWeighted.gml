@@ -1,18 +1,13 @@
-/// @param maximize
 /// @param constraintEquationArray
-/// @param [objectiveFunction]
 
-#macro __BIG_M_VERY_LARGE  1000000
-#macro __BIG_M_VERY_SMALL  0.00001
-
-function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
+function SimplexSolverWeighted(_problemArray)
 {
     //The number of equations is used to determine how high the tableau needs to be
     //Add an extra row at the bottom for the objective function
     var _equationCount = array_length(_problemArray)+1;
     var _equationArray = array_create(_equationCount);
     array_copy(_equationArray, 0, _problemArray, 0, _equationCount-1);
-    _equationArray[@ _equationCount-1] = _objectiveFunction;
+    _equationArray[@ _equationCount-1] = {};
     
     var _basicVariablesXArray   = [];
     var _basicVariablesYArray   = [];
@@ -29,10 +24,12 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
     //We want to analyze constraints and the objective function so let's create an array that combines the two
     var _variableDict = {};
     var _i = 0;
-    repeat(_equationCount)
+    repeat(_equationCount-1)
     {
         var _equationStruct = _equationArray[_i];
         var _termsArray = variable_struct_get_names(_equationStruct);
+        
+        var _weight = _equationStruct[$ "weight"] ?? __BIG_M_VERY_LARGE;
         
         //Do it alphabetically, because why not
         array_sort(_termsArray, true);
@@ -48,16 +45,19 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
                     case "<=":
                     case "<":
                         _tableauWidth += 2; //Add both a surplus variable and artificial variable
+                        if (_weight < __BIG_M_VERY_LARGE) _tableauWidth++; //One error variables
                     break;
                     
                     case "=":
                     case "==":
                         ++_tableauWidth; //Add a artificial variable
+                        if (_weight < __BIG_M_VERY_LARGE) _tableauWidth += 2; //Two error variables
                     break;
                     
                     case ">=":
                     case ">":
                         _tableauWidth += 2; //Add both a surplus variable and artificial variable
+                        if (_weight < __BIG_M_VERY_LARGE) _tableauWidth++; //One error variables
                     break;
                     
                     default:
@@ -65,9 +65,9 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
                     break;
                 }
             }
-            else if (_term == "const")
+            else if ((_term == "const") || (_term == "weight"))
             {
-                //We can ignore these, they're handled later
+                //We can ignore these, they're handled elsewhere
             }
             else if (!variable_struct_exists(_variableDict, _term))
             {
@@ -97,6 +97,7 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
     repeat(_equationCount)
     {
         var _equationStruct = _equationArray[_i];
+        var _weight = _equationStruct[$ "weight"] ?? __BIG_M_VERY_LARGE;
         
         //Unpack our variables into the tableau
         //TODO - Could we do this during the variable discovery phase?
@@ -137,6 +138,13 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
                     _tableauGrid[# _otherVariablesX, _equationCount-1] = __BIG_M_VERY_LARGE;
                     ++_otherVariablesX;
                     
+                    if (_weight < __BIG_M_VERY_LARGE)
+                    {
+                        _tableauGrid[# _otherVariablesX, _i] = -_reverse; //Error variable
+                        _tableauGrid[# _otherVariablesX, _equationCount-1] = _weight;
+                        ++_otherVariablesX;
+                    }
+                    
                     if (_op == "<")
                     {
                         //If we have a simple "less than" sign then treat it as <= but with a tiny offset
@@ -149,6 +157,17 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
                     _tableauGrid[# _otherVariablesX, _i] = 1; //Artificial variable
                     _tableauGrid[# _otherVariablesX, _equationCount-1] = __BIG_M_VERY_LARGE;
                     ++_otherVariablesX;
+                    
+                    if (_weight < __BIG_M_VERY_LARGE)
+                    {
+                        _tableauGrid[# _otherVariablesX, _i] = -1; //Error variable
+                        _tableauGrid[# _otherVariablesX, _equationCount-1] = _weight;
+                        ++_otherVariablesX;
+                        
+                        _tableauGrid[# _otherVariablesX, _i] = 1; //Error variable
+                        _tableauGrid[# _otherVariablesX, _equationCount-1] = _weight;
+                        ++_otherVariablesX;
+                    }
                 break;
                 
                 case ">=":
@@ -160,6 +179,13 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
                     _tableauGrid[# _otherVariablesX, _equationCount-1] = __BIG_M_VERY_LARGE;
                     ++_otherVariablesX;
                     
+                    if (_weight < __BIG_M_VERY_LARGE)
+                    {
+                        _tableauGrid[# _otherVariablesX, _i] = _reverse; //Error variable
+                        _tableauGrid[# _otherVariablesX, _equationCount-1] = _weight;
+                        ++_otherVariablesX;
+                    }
+                    
                     if (_op == ">")
                     {
                         //If we have a simple "greater than" sign then treat it as >= but with a tiny offset
@@ -170,12 +196,6 @@ function SimplexSolver(_maximize, _problemArray, _objectiveFunction = {})
         }
         
         ++_i;
-    }
-    
-    if (_maximize)
-    {
-        //Flip the sign for the objective function if we're maximizing
-        ds_grid_multiply_region(_tableauGrid, 0, _equationCount-1, _variableCount-1, _equationCount-1, -1);
     }
     
     //Eliminate M from the bottom of the artifical variable columns
