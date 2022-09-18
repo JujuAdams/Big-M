@@ -8,32 +8,30 @@ with(BentoConstants)
 }
 
 A = BentoBox()
-    .Constraint("left   = 20",
-                "top    = 20",
-                "right  = room_width  - 20",
-                "bottom = room_height - 20");
+    .Constraint("left   = 20")
+    .Constraint("top    = 20")
+    .Constraint("right  = room_width  - padding")
+    .Constraint("bottom = room_height - padding");
 
 BentoInheritStart(A);
-    
     B = BentoBox()
-        .Constraint("x      = ^.x",
-                    "width  = ^.width - 2*padding",
-                    "top    > ^.top   + padding",
-                    "height > 100",
-                    "height < 200",
-                    "bottom < ^.bottom - padding")
+        .Constraint("x      = ^.x")
+        .Constraint("width  = ^.width - 2*padding")
+        .Constraint("top    > ^.top   + padding")
+        .Constraint("height > 100")
+        .Constraint("height < 200")
+        .Constraint("bottom < ^.bottom - padding")
         .WeakConstraint("y = mouse_y");
     
     BentoInheritStart(B);
-    
-    C = BentoBox()
-        .Constraint("width  > 60",
-                    "width  < 120",
-                    "left   > ^.left   + padding",
-                    "right  < ^.right  - padding",
-                    "top    = ^.top    + padding",
-                    "bottom = ^.bottom - padding")
-        .WeakConstraint("x = mouse_x");
+        C = BentoBox()
+            .Constraint("width  > 60")
+            .Constraint("width  < 120")
+            .Constraint("left   > ^.left   + padding")
+            .Constraint("right  < ^.right  - padding")
+            .Constraint("top    = ^.top    + padding")
+            .Constraint("bottom = ^.bottom - padding")
+            .WeakConstraint("x = mouse_x");
     
     BentoInheritEnd();
 BentoInheritEnd();

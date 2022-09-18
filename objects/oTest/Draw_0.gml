@@ -1,4 +1,4 @@
-var _solution = SimplexSolver(false,
+var _solution = SimplexSolver(true,
 [
     {x: 1, op: ">=", const: 10},
     {x: 1, op: "<=", const: 20},

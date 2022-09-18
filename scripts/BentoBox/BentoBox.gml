@@ -51,89 +51,26 @@ function __BentoClassBox(_name = undefined) constructor
         ChildOf(global.__bentoInheritingParent);
     }
     
-    static StrongConstraint = function()
-    {
-        switch(argument_count)
-        {
-            case 1: array_push(__bentoStrongConstraintArray, argument[0]); break;
-            case 2: array_push(__bentoStrongConstraintArray, argument[0], argument[1]); break;
-            case 3: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2]); break;
-            case 4: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2], argument[3]); break;
-            case 5: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4]); break;
-            case 6: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5]); break;
-            case 7: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6]); break;
-            case 8: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6], argument[7]); break;
-            case 9: array_push(__bentoStrongConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6], argument[7], argument[8]); break;
-            
-            default:
-                var _i = 0;
-                repeat(argument_count)
-                {
-                    array_push(__bentoStrongConstraintArray, argument[_i]);
-                    ++_i;
-                }
-            break;
-        }
-        
-        return self;
-    }
-    
     static DrawWireframe = function()
     {
         draw_rectangle(left, top, right, bottom, true);
     }
     
-    static Constraint = function()
+    static StrongConstraint = function(_constraintString)
     {
-        switch(argument_count)
-        {
-            case 1: array_push(__bentoMidConstraintArray, argument[0]); break;
-            case 2: array_push(__bentoMidConstraintArray, argument[0], argument[1]); break;
-            case 3: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2]); break;
-            case 4: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2], argument[3]); break;
-            case 5: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4]); break;
-            case 6: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5]); break;
-            case 7: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6]); break;
-            case 8: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6], argument[7]); break;
-            case 9: array_push(__bentoMidConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6], argument[7], argument[8]); break;
-            
-            default:
-                var _i = 0;
-                repeat(argument_count)
-                {
-                    array_push(__bentoMidConstraintArray, argument[_i]);
-                    ++_i;
-                }
-            break;
-        }
-        
+        array_push(__bentoStrongConstraintArray, _constraintString);
         return self;
     }
     
-    static WeakConstraint = function()
+    static Constraint = function(_constraintString)
     {
-        switch(argument_count)
-        {
-            case 1: array_push(__bentoWeakConstraintArray, argument[0]); break;
-            case 2: array_push(__bentoWeakConstraintArray, argument[0], argument[1]); break;
-            case 3: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2]); break;
-            case 4: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2], argument[3]); break;
-            case 5: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4]); break;
-            case 6: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5]); break;
-            case 7: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6]); break;
-            case 8: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6], argument[7]); break;
-            case 9: array_push(__bentoWeakConstraintArray, argument[0], argument[1], argument[2], argument[3], argument[4], argument[5], argument[6], argument[7], argument[8]); break;
-            
-            default:
-                var _i = 0;
-                repeat(argument_count)
-                {
-                    array_push(__bentoWeakConstraintArray, argument[_i]);
-                    ++_i;
-                }
-            break;
-        }
-        
+        array_push(__bentoMidConstraintArray, _constraintString);
+        return self;
+    }
+    
+    static WeakConstraint = function(_constraintString)
+    {
+        array_push(__bentoWeakConstraintArray, _constraintString);
         return self;
     }
     
@@ -154,6 +91,24 @@ function __BentoClassBox(_name = undefined) constructor
         array_push(__bentoChildren, _child);
         return self;
     }
+    
+    static Instantiate = function()
+    {
+        if (__bentoInstantiated) return self;
+        __bentoInstantiated = true;
+        
+        if (__bentoParent != undefined) show_error("Cannot instantiate a Bento box with a parent\n ", true);
+        
+        __BentoSolverStart();
+        __SetupSolver();
+        __BentoSolverEnd();
+        
+        return self;
+    }
+    
+    
+    
+    #region Layout Setters
     
     static LayoutFree = function()
     {
@@ -195,19 +150,64 @@ function __BentoClassBox(_name = undefined) constructor
         return self;
     }
     
-    static Instantiate = function()
+    static GetLayout = function()
     {
-        if (__bentoInstantiated) return self;
-        __bentoInstantiated = true;
+        var _layoutName = undefined;
+        switch(__bentoLayout)
+        {
+            case __BENTO_LAYOUT.__FREE:   _layoutName = "free";   break;
+            case __BENTO_LAYOUT.__LIST_X: _layoutName = "list x"; break;
+            case __BENTO_LAYOUT.__LIST_Y: _layoutName = "list y"; break;
+            case __BENTO_LAYOUT.__GRID:   _layoutName = "grid";   break;
+            
+            default:
+            break;
+        }
         
-        if (__bentoParent != undefined) show_error("Cannot instantiate a Bento box with a parent\n ", true);
-        
-        __BentoSolverStart();
-        __SetupSolver();
-        __BentoSolverEnd();
-        
+        return {
+            layout:  _layoutName,
+            gutterX: __bentoLayoutGutterX,
+            gutterY: __bentoLayoutGutterY,
+            maxX:    __bentoLayoutMaxX,
+            maxY:    __bentoLayoutMaxY,
+        };
+    }
+    
+    #endregion
+    
+    
+    
+    #region LTRBXYWH Setters
+    
+    static SetLeft = function(_value)
+    {
+        left = _value;
         return self;
     }
+    
+    static SetTop = function(_value)
+    {
+        top = _value;
+        return self;
+    }
+    
+    static SetRight = function(_value)
+    {
+        right = _value;
+        return self;
+    }
+    
+    static SetBottom = function(_value)
+    {
+        bottom = _value;
+        return self;
+    }
+    
+    #endregion
+    
+    
+    
+    #region Private
     
     static __SetupSolver = function()
     {
@@ -244,4 +244,6 @@ function __BentoClassBox(_name = undefined) constructor
             }
         }
     }
+    
+    #endregion
 }

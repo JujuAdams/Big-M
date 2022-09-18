@@ -1,0 +1,2 @@
+#macro __BIG_M_VERY_LARGE  1000000
+#macro __BIG_M_VERY_SMALL  0.00001
